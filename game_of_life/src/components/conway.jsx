@@ -1,52 +1,41 @@
 import React, { Component } from 'react'
+import update from 'immutability-helper';
 
 export default class conway extends Component {
     constructor(props){
         super(props);
         this.state = {
-            conways_grid: [],
             height:50,
-            width:50
-        }        
-    }
+            width:50,
+            theGrid: [...Array(50)].map(x => Array(50).fill(0)),
+            mirrorGrid: [...Array(50)].map(x => Array(50).fill(0)),
+            c: null,
+            ctx: null
+        }   
 
-    //Creates a 2 dimensional array
-    createArray(rows) { 
-        var arr = [];
-        for (var i = 0; i < rows; i++) {
-            arr[i] = [];
-        }
+    }
+    updateTheGrid(x,y,value){
         this.setState({
-            conways_grid: this.state.conways_grid.push.apply(this.state.conways_grid, arr)
+            theGrid: update(this.state.theGrid, 
+                { [x]: { [y]: { $set: value } } }
+            ) 
         })
-    }
-
-    //Default population, all cells are dead
-    defaultPopulation(){
-        var theGrid = this.state.conways_grid;
-        
-        for (var j = 0; j < this.state.height; j++) { //iterate through rows
-            for (var k = 0; k < this.state.width; k++) { //iterate through columns
-                theGrid[j][k] = 0;
-            }
-        }
-
-        this.forceUpdate();
-
+        console.log(this.state.theGrid, "theGrid")
     }
 
     //Setting live cells
-    populateCanvas(){
-        var theGrid = this.state.conways_grid;
-
-        theGrid[0][0] = 1;
+    populateGrid(){
+        /*
+        var theGrid = this.state.theGrid
+        theGrid[0][0].value = 1;
         theGrid[0][1] = 1;
         theGrid[1][0] = 1;
         theGrid[1][3] = 1;
         theGrid[2][1] = 1;
         theGrid[2][2] = 1;
-
-        this.forceUpdate();
+        */
+        this.updateTheGrid(0,0,1)
+        
         
     }
 
@@ -132,12 +121,20 @@ export default class conway extends Component {
     }
 
     componentDidMount() {
-        this.createArray(this.state.height);
-        this.defaultPopulation();
-        this.populateCanvas();
-        this.plotGrid();
+        /*var theGrid = createArray(gridWidth);
+        var mirrorGrid = createArray(gridWidth);
+        var c = document.getElementById("myCanvas");
+        var ctx = c.getContext("2d");
+        ctx.fillStyle = "#FF0000";*/
 
-        setTimeout(this.tick(), 1000);
+        
+        /*
+        
+        this.plotGrid();  */     
+        this.populateGrid()
+
+        //setTimeout(this.tick(), 1000);
+        
     }    
 
     render() {
