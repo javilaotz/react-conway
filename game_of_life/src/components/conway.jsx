@@ -1,5 +1,4 @@
 import React, { Component } from 'react'
-import update from 'immutability-helper';
  
 export default class conway extends Component {
     constructor(props){
@@ -11,16 +10,17 @@ export default class conway extends Component {
             mirrorGrid: [...Array(50)].map(x => Array(50).fill(0))
         }  
         this.updateGrid = this.updateGrid.bind(this)
+        this.updateTheGrid = this.updateTheGrid.bind(this)
+        this.plotCell = this.plotCell.bind(this)
     }
  
     //Set a cell into TheGrid according to x and y position
     updateTheGrid(x,y,cell){
-        let newArray = update(this.state.theGrid, {
-            [x]: {
-                [y]: { $set: cell }
-            }
-        })
-        this.setState(this.state.theGrid = newArray)
+        let theGrid = {...this.state.theGrid}
+        theGrid[x][y] = cell
+        let newGrid = {...this.state, typeElements: {theGrid} }
+  
+        this.setState({theGrid:newGrid})
     }
  
     //Setting live cells
@@ -35,41 +35,26 @@ export default class conway extends Component {
  
     //Plot Grid
     plotGrid() {
-        var theGrid = this.state.theGrid;
-        const ctx = this.refs.canvas.getContext('2d');
-        var liveCount = 0;
- 
-       
-        /*
-        //This fragment is not working
-        theGrid.forEach(function (val, index) {
-            theGrid[index].forEach(function (val, index2){
-                if (theGrid[index][index2] === 1) {
-                    console.log(theGrid[index][index2], "plotting live cell at ("+index+","+index2+")")
-                    this.plotCell(index, index2);
-                    liveCount++;
+        let theGrid = this.state.theGrid;
+        const ctx = this.refs.canvas.getContext('2d');      
+
+        theGrid.map((row, row_index)=> {
+            row.map((col, col_index) => {
+                if(col===1){
+                    console.log(`Col: ${col}`)
+                    this.plotCell(ctx, col_index, row_index)
                 }
             })
-        })  */
- 
-        for (var j = 0; j < this.state.height; j++) {
-            for (var k = 0; k < this.state.width; k++) {
-                if (theGrid[j][k] === 1) {
-                    //console.log("plotting live cell at (" + j + ", " + k +")")
-                    this.plotCell(ctx, k, j);
-                    liveCount++;
-                }
-            }
-        }
+        })
+        
         ctx.stroke();
- 
  
     }
  
     //update the grid according to conway's rules
     updateGrid() { //perform one iteration of grid update
-        var theGrid = this.state.theGrid
-        var mirrorGrid = this.state.mirrorGrid
+        let theGrid = this.state.theGrid
+        let mirrorGrid = this.state.mirrorGrid
        
         console.log("mirrorGrid : ", mirrorGrid)
         for (var j = 1; j < this.state.height -1; j++) {
@@ -116,8 +101,8 @@ export default class conway extends Component {
         theGrid = mirrorGrid;
         mirrorGrid = temp;
  
-        this.setState(this.state.theGrid = theGrid);
-        this.setState(this.state.mirrorGrid = mirrorGrid);
+        this.setState({theGrid : theGrid});
+        this.setState({mirrorGrid : mirrorGrid});
     }
  
     tick() { //main loop
@@ -131,9 +116,12 @@ export default class conway extends Component {
     }
  
     componentDidMount() {
+        console.log(this.state.theGrid, "Recién creada")
         this.populateGrid()
+        console.log(this.state.theGrid, "Antes de actualizar")
         this.plotGrid()        
         this.updateGrid()
+        console.log(this.state.theGrid, "despues de actualizar")
     }    
  
     render() {
