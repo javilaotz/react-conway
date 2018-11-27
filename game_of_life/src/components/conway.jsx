@@ -35,14 +35,15 @@ export default class conway extends Component {
  
     //Plot Grid
     plotGrid() {
-        let theGrid = this.state.theGrid;
+        let theGrid = this.state.theGrid
         const ctx = this.refs.canvas.getContext('2d');      
 
         theGrid.map((row, row_index)=> {
             row.map((col, col_index) => {
                 if(col===1){
-                    console.log(`Col: ${col}`)
                     this.plotCell(ctx, col_index, row_index)
+                }else{
+                    this.killCell(ctx, col_index, row_index)
                 }
             })
         })
@@ -54,78 +55,134 @@ export default class conway extends Component {
     //update the grid according to conway's rules
     updateGrid() { //perform one iteration of grid update
         let theGrid = this.state.theGrid
-        let mirrorGrid = this.state.mirrorGrid
+        let mirrorGrid = {...this.state.mirrorGrid}
        
+        console.log("theGrid : ", theGrid)
         console.log("mirrorGrid : ", mirrorGrid)
-        for (var j = 1; j < this.state.height -1; j++) {
-            for (var k = 1; k < this.state.width -1;  k++) {
-                var totalCells = 0;
-                //add up the total values for the surrounding cells
-                totalCells += theGrid[j - 1][k - 1]; //top left
-                totalCells += theGrid[j - 1][k]; //top center
-                totalCells += theGrid[j - 1][k + 1]; //top right
- 
-                totalCells += theGrid[j][k - 1]; //middle left
-                totalCells += theGrid[j][k + 1]; //middle right
- 
-                totalCells += theGrid[j + 1][k - 1]; //bottom left
-                totalCells += theGrid[j + 1][k]; //bottom center
-                totalCells += theGrid[j + 1][k + 1]; //bottom right
- 
-                //apply the rules to each cell
-                switch (totalCells) {
-                    case 2:
-                        mirrorGrid[j][k] = theGrid[j][k];
- 
-                        break;
-                    case 3:
-                        mirrorGrid[j][k] = 1; //live
- 
-                        break;
-                    default:
-                        mirrorGrid[j][k] = 0; //
+        theGrid.map((row, row_index)=> {
+            row.map((item, col_index) => {
+                if(item===1){
+                    console.log(`POS[${col_index}][${row_index}]: ${item}`)
+                    let totalCells = 0; 
+                    
+                    //define position vars
+                    let pos_x = col_index
+                    let pos_y = row_index
+
+                    //top left:
+                    if (pos_x-1 >= 0) {
+                        if (pos_y-1 >= 0) {
+                            console.log(`[TL] => the position ${pos_x-1}, ${pos_y-1} exist`)
+                            totalCells += theGrid[pos_x-1][pos_y-1]
+                        }
+                    }
+                    //top center:
+                    if (pos_x-1 >= 0) {
+                        if (pos_y >= 0) {
+                            console.log(`[TC] => the position ${pos_x-1}, ${pos_y} exist`)
+                            totalCells += theGrid[pos_x-1][pos_y]
+                        }
+                    }
+                    //top right:
+                    if (pos_x-1 >= 0) {
+                        if (pos_y+1 >= 0) {
+                            console.log(`[TR] => the position ${pos_x-1}, ${pos_y+1} exist`)
+                            totalCells += theGrid[pos_x-1][pos_y+1]
+                        }
+                    }
+                    //middle left:
+                    if (pos_x >= 0) {
+                        if (pos_y-1 >= 0) {
+                            console.log(`[ML] => the position ${pos_x}, ${pos_y-1} exist`)
+                            totalCells += theGrid[pos_x][pos_y-1]
+                        }
+                    }
+                    //middle right:
+                    if (pos_x >= 0) {
+                        if (pos_y+1 >= 0) {
+                            console.log(`[MR] => the position ${pos_x}, ${pos_y+1} exist`)
+                            totalCells += theGrid[pos_x][pos_y+1]
+                        }
+                    }
+                    //bottom left:
+                    if (pos_x+1 >= 0) {
+                        if (pos_y-1 >= 0) {
+                            console.log(`[BL] => the position ${pos_x+1}, ${pos_y-1} exist`)
+                            totalCells += theGrid[pos_x+1][pos_y-1]
+                        }
+                    }
+                    //bottom center:
+                    if (pos_x+1 >= 0) {
+                        if (pos_y >= 0) {
+                            console.log(`[BC] => the position ${pos_x+1}, ${pos_y} exist`)
+                            totalCells += theGrid[pos_x+1][pos_y]
+                        }
+                    }
+                    //bottom right:
+                    if (pos_x+1 >= 0) {
+                        if (pos_y+1 >= 0) {
+                            console.log(`[BR] => the position ${pos_x+1}, ${pos_y+1} exist`)
+                            totalCells += theGrid[pos_x+1][pos_y+1]
+                        }
+                    }
+
+                    console.log(`[Result] The Total of live cell around this live cell is ${totalCells}`)
+
+
+                    /*
+                    Any live cell with fewer than two live neighbors dies, as if by underpopulation.
+                    Any live cell with two or three live neighbors lives on to the next generation.
+                    Any live cell with more than three live neighbors dies, as if by overpopulation.
+                    Any dead cell with exactly three live neighbors becomes a live cell, as if by reproduction.
+                    */
+
+                   switch (totalCells) {
+                        case 2 || 3:
+                            theGrid[pos_x][pos_y] = 1 //Lives by underpopulation
+                            break;
+                        case totalCells > 3:
+                            theGrid[pos_x][pos_y] = 0 //Dies by overpopulation 
+                            break;
+                        default:
+                            theGrid[pos_x][pos_y] = 0; //
+                    }
+
                 }
-            }
-            for (var l = 0; l < this.state.height; l++) { //iterate through rows
-                //top and bottom
-                mirrorGrid[l][0] = mirrorGrid[l][this.state.height - 3];
-                mirrorGrid[l][this.state.height - 2] = mirrorGrid[l][1];
-                //left and right
-                mirrorGrid[0][l] = mirrorGrid[this.state.height - 3][l];
-                mirrorGrid[this.state.height - 2][l] = mirrorGrid[1][l];
-            }
-        }
- 
-        //swap grids
-        var temp = theGrid;
-        theGrid = mirrorGrid;
-        mirrorGrid = temp;
- 
-        this.setState({theGrid : theGrid});
-        this.setState({mirrorGrid : mirrorGrid});
+            })
+        })
+
+        console.log(`Grid resultante: ${theGrid}`)
+        let newGrid = {...this.state, typeElements: {theGrid} }
+        this.setState({theGrid : newGrid})
     }
  
     tick() { //main loop
-        this.updateGrid()
-        this.plotGrid()
+        setInterval(() => {
+            this.updateGrid()
+            this.plotGrid()
+        }, 1000);
     }
  
     //plotting a live cell
     plotCell(ctx,x,y) {
+        ctx.fillStyle="#000";
         ctx.fillRect(x*10,y*10,10,10);
     }
+
+    //plotting a dead cell
+    killCell(ctx,x,y) {
+        ctx.fillStyle="#FFF";
+        ctx.fillRect(x*10,y*10,10,10);
+    }    
  
     componentDidMount() {
-        console.log(this.state.theGrid, "Recién creada")
         this.populateGrid()
-        console.log(this.state.theGrid, "Antes de actualizar")
-        this.plotGrid()        
-        this.updateGrid()
-        console.log(this.state.theGrid, "despues de actualizar")
+        this.plotGrid() 
+        this.tick()
     }    
  
     render() {
-       
+        
         return (
         <div>
             <h1>Conway's game of life</h1>
