@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import { Row, Col, Container, Button } from 'reactstrap'
  
 export default class conway extends Component {
     constructor(props){
@@ -41,7 +42,7 @@ export default class conway extends Component {
  
     //Setting live cells
     populateGrid(){
-        this.glider()
+        this.seed()
     }
  
     //Plot Grid
@@ -81,9 +82,6 @@ export default class conway extends Component {
         
         theGrid.map((row, row_index) => {
             row.map((item, col_index) => {
-                    if (row_index === 2) {
-                        //debugger
-                    }    
                 
                     let totalCells = 0;  //amount of live neghtbour
                     
@@ -100,39 +98,31 @@ export default class conway extends Component {
 
                     //middle left:
                     totalCells = this.checkCell(pos_x - 1, pos_y, theGrid, totalCells)
-                    //middle center:
-                    //not necessary, current cell position
                     //middle right:
                     totalCells = this.checkCell(pos_x + 1, pos_y, theGrid, totalCells)
 
-                    //top left:
+                    //bottom left:
                     totalCells = this.checkCell(pos_x - 1, pos_y + 1, theGrid, totalCells)
-                    //top center:
+                    //bottom center:
                     totalCells = this.checkCell(pos_x, pos_y + 1, theGrid, totalCells)
-                    //top right:
+                    //bottom right:
                     totalCells = this.checkCell(pos_x + 1, pos_y + 1, theGrid, totalCells)
                    
-                    /*
-                    Any live cell with fewer than two live neighbors dies, as if by underpopulation.
-                    Any live cell with two or three live neighbors lives on to the next generation.
-                    Any live cell with more than three live neighbors dies, as if by overpopulation.
-                    Any dead cell with exactly three live neighbors becomes a live cell, as if by reproduction.
-                    */
                     switch (totalCells) {
-                        case totalCells < 2 :
+                        case (totalCells < 2) :
                             if (item===1) {
                                 mirrorGrid[pos_x][pos_y] = 0 //Dies by underpopulation  
                             }
                             break;
-                        case totalCells===2:  
+                        case 2:  
                             if (item===1) {
                                 mirrorGrid[pos_x][pos_y] = 1 //Lives
                             }                            
                             break;
-                        case totalCells===3:  
+                        case 3:  
                                 mirrorGrid[pos_x][pos_y] = 1 //Lives by reproduction or pass to the next generation              
                             break;
-                        case totalCells > 3 :   
+                        case (totalCells > 3) :   
                             if (item===1) {
                                 mirrorGrid[pos_x][pos_y] = 0 //Dies by overpopulation
                             }                         
@@ -143,7 +133,6 @@ export default class conway extends Component {
                             }
                     }
                     return 0;
-                
             })
             return 0;
         })
@@ -175,6 +164,7 @@ export default class conway extends Component {
     componentDidMount() {
         this.populateGrid()
         this.plotGrid()     
+        this.interval = setInterval(this.tick, 1000);
     }    
     componentWillMount(){
         clearInterval(this.interval)
@@ -183,10 +173,18 @@ export default class conway extends Component {
     render() {
         return (
         <div>
-            <h1>Conway's game of life</h1>
-           <canvas ref="canvas" width={500} height={500}  />
-           <button onClick={this.tick}>Step</button>
-           <button onClick={this.action}>Play (1 sec)</button>
+            <Container>
+                <Row>
+                    <Col><h1>Conway's game of life</h1></Col>
+                </Row>
+                <Row>
+                    <Col><canvas ref="canvas" width={500} height={500}  /></Col>
+                </Row>
+                <Row>
+                    <Col sm={{ size: 'auto', offset: 1 }}><Button color="primary" onClick={this.tick}>Step</Button></Col>
+                    <Col sm={{ size: 'auto', offset: 1 }}><Button color="success" onClick={this.action}>Play</Button></Col>
+                </Row>
+            </Container>
        </div>
        )
    }
