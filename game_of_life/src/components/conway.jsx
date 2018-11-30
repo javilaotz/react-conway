@@ -42,7 +42,7 @@ export default class conway extends Component {
  
     //Setting live cells
     populateGrid(){
-        this.seed()
+        this.glider()
     }
  
     //Plot Grid
@@ -69,7 +69,7 @@ export default class conway extends Component {
     checkCell(x,y,grid,totalCells){
         if (x >= 0 && x <=49) {
             if (y >= 0 && y <=49) {
-                totalCells += grid[x][y]
+                totalCells += grid[y][x]
             }
         }
         return totalCells
@@ -78,11 +78,11 @@ export default class conway extends Component {
     //update the grid according to conway's rules
     updateGrid() { //perform one iteration of grid update
         let theGrid = this.state.theGrid || []
-        let mirrorGrid = theGrid
+        let mirrorGrid = [...Array(50)].map(x => Array(50).fill(0))
         
         theGrid.map((row, row_index) => {
             row.map((item, col_index) => {
-                
+                    
                     let totalCells = 0;  //amount of live neghtbour
                     
                     //define position vars
@@ -107,34 +107,27 @@ export default class conway extends Component {
                     totalCells = this.checkCell(pos_x, pos_y + 1, theGrid, totalCells)
                     //bottom right:
                     totalCells = this.checkCell(pos_x + 1, pos_y + 1, theGrid, totalCells)
-                   
-                    switch (totalCells) {
-                        case (totalCells < 2) :
-                            if (item===1) {
-                                mirrorGrid[pos_x][pos_y] = 0 //Dies by underpopulation  
-                            }
-                            break;
-                        case 2:  
-                            if (item===1) {
-                                mirrorGrid[pos_x][pos_y] = 1 //Lives
-                            }                            
-                            break;
-                        case 3:  
-                                mirrorGrid[pos_x][pos_y] = 1 //Lives by reproduction or pass to the next generation              
-                            break;
-                        case (totalCells > 3) :   
-                            if (item===1) {
-                                mirrorGrid[pos_x][pos_y] = 0 //Dies by overpopulation
-                            }                         
-                            break;
-                        default:
-                            if (item===0) {
-                                mirrorGrid[pos_x][pos_y] = 0                                
-                            }
+                    
+                    if (totalCells < 2) {
+                        mirrorGrid[pos_x][pos_y] = 0 //Dies by underpopulation 
                     }
-                    return 0;
+                    
+                    if(totalCells === 2){
+                        if (item===1) { //Is alive?
+                            mirrorGrid[pos_x][pos_y] = 1 //Lives
+                        }  
+                    } 
+                    
+                    if(totalCells === 3){
+                        mirrorGrid[pos_x][pos_y] = 1 //Lives by reproduction or pass to the next generation                
+                    } 
+                    
+                    if(totalCells > 3){
+                        mirrorGrid[pos_x][pos_y] = 0 //Dies by overpopulation
+                    }
+                    //return console.log("ending 1");
             })
-            return 0;
+            //return console.log("ending 2");
         })
         this.setState({theGrid : mirrorGrid})
     }
@@ -152,19 +145,45 @@ export default class conway extends Component {
 
     //plotting a dead cell
     killCell(ctx,x,y) {
-        ctx.fillStyle="#FFF";
+        ctx.fillStyle="#EEE";
         ctx.fillRect(x*10,y*10,10,10);
     }   
     
     //Play button action
     action(){
-        this.interval = setInterval(this.tick, 1000);
+        this.interval = setInterval(this.tick, 200);
+    }
+
+    //draw a background grid into the canvas
+    backgroundGrid(){
+        const ctx = this.refs.canvas.getContext('2d');     
+        let x = 10
+        let y = 10
+        let w = 500
+        let h = 500
+        ctx.canvas.width  = w;
+        ctx.canvas.height = h;
+        
+        
+        for (x=0;x<=w;x+=10) {
+            for (y=0;y<=h;y+=10) {
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, h);
+                ctx.stroke();
+                ctx.moveTo(0, y);
+                ctx.lineTo(w, y);
+            }
+        }
+        ctx.strokeStyle="#EEEEEE";
+        ctx.lineWidth=2;
+        ctx.stroke();
     }
  
     componentDidMount() {
+        this.backgroundGrid()
         this.populateGrid()
         this.plotGrid()     
-        this.interval = setInterval(this.tick, 1000);
+        //this.interval = setInterval(this.tick, 1000);
     }    
     componentWillMount(){
         clearInterval(this.interval)
@@ -181,8 +200,8 @@ export default class conway extends Component {
                     <Col><canvas ref="canvas" width={500} height={500}  /></Col>
                 </Row>
                 <Row>
-                    <Col sm={{ size: 'auto', offset: 1 }}><Button color="primary" onClick={this.tick}>Step</Button></Col>
-                    <Col sm={{ size: 'auto', offset: 1 }}><Button color="success" onClick={this.action}>Play</Button></Col>
+                    <Col sm={{ size: 'small', offset: 1 }}><Button color="primary" onClick={this.tick}>Step</Button></Col>
+                    <Col sm={{ size: 'small', offset: 1 }}><Button color="success" onClick={this.action}>Play</Button></Col>
                 </Row>
             </Container>
        </div>
