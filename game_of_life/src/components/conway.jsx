@@ -184,7 +184,7 @@ export default class conway extends Component {
     
     //Play button action
     action(){
-        this.interval = setInterval(this.tick, 200);
+        this.interval = setInterval(this.tick, 1000);
     }
  
     componentDidMount() {
