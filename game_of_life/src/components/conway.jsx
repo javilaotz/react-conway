@@ -68,7 +68,7 @@ export default class conway extends Component {
  
     //Setting live cells
     populateGrid(){
-        this.smallExploder()
+        this.seed()
     }
  
     //Plot Grid
